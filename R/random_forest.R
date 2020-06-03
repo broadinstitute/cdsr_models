@@ -29,7 +29,7 @@ require(ranger)
 #'
 random_forest <- function(X, y, k = 10, n = 500){
   y.clean <- y[is.finite(y)]  # only finite/non-missing values
-  X.clean <- X[, apply(X, 2, function(x) !any(is.na(x)))]
+  X.clean <- X[, apply(X, 2, function(x) all(is.finite(x)))]
 
   # make sure data aligns
   cl <- sample(dplyr::intersect(rownames(X.clean), names(y.clean)))  # overlapping rows
@@ -53,6 +53,8 @@ random_forest <- function(X, y, k = 10, n = 500){
     X_test <- X.clean[test,]
 
     X_train <- X_train[,apply(X_train,2,var) > 0]  # remove columns with variance 0
+    print(dim(X_train))
+    print(any(is.na(X_train)))
 
     # select top n correlated features in X (this filters to "relevant" features)
     # allows for faster model fitting
