@@ -33,7 +33,7 @@ random_forest <- function(X, y, k = 10, n = 500){
 
   # make sure data aligns
   cl <- sample(dplyr::intersect(rownames(X.clean), names(y.clean)))  # overlapping rows
-  X.clean <- scale(X.clean[cl,])  # scales the columns of X and selects overlapping lines
+  X.clean <- X.clean[cl,] # selects overlapping lines from X
   y.clean <- y.clean[cl]  # selects overlapping lines from y
 
   colnames(X) %<>% make.names()  # ensure unique column names
