@@ -2,100 +2,105 @@ require(tidyverse)
 require(magrittr)
 require(ashr)
 
-#' Calculates the linear association between a matrix of features A and a vector y. 
+#' Calculates the linear association between a matrix of features A and a vector y.
 #'
-#' @param A n x m numerical matrix of features (missing values are allowed).
-#' @param y length n vector of numerical values (missing values are not allowed)
+#' @param X n x m numerical matrix of features (missing values are allowed).
+#' @param Y n x p numerical matrix of responses (missing values are allowed)
 #' @param W n x p numerical matrix of confounders (missing values are not allowed).
-#' @param robust.se boolean flag to control if homoskedastic or heteroskedastic.
-#' @param scale.A boolean to control if the columns of A to be scaled or not.
-#' @param scale.y boolen to control if the variance of y should be scaled to 1.
-#' @param is.dependent should y be considered as a dependent or independent variable
-#' @param var.th float minimum variation of included feature
-#' @param coef.var boolean to control if the coefficient of variation is used.
+#' @param robust.se Boolean flag to control if homoskedastic or heteroskedastic.
+#' @param shrinkage Boolean to control whether adaptive shrinkage should be applied.
+#' @param alpha Numeric value controling the alpha value for adaptive shrinkage.
 #'
-#' @return A table with the following columns:
+#' @return A list with components:
 #' \describe{
-#' feature:  column names of A \cr
-#' p.val: p-values computed for the null-hypothesis beta = 0 \cr
-#' q.val: q-values computed using Benjamini-Hotchberg method \cr
-#' n: number of non-missing values for each column of A \cr
-#' betahat: estimated linear coefficient controlled for W \cr
-#' sebetahat: standard error for the estimate of beta \cr
-#' sebetahat: standard error for the estimate of beta \cr
-#' lfdr: local and global fdr values computed using adaptive shrinkage as \cr
-#' qvalue: local and global fdr values computed using adaptive shrinkage as \cr
-#' PosteriorMean: moderated effect size estimates again computed with adaptive shrinkage \cr
-#' PosteriorSD: standard deviations of moderated effect size estimates \cr
-#' z.score: z-score PosteriorMean/PosteriorSD}
+#'   \item{N}{Vector of degrees of freedom for each feature.}
+#'   \item{rho}{Vector of uncorrected beta estimates controlled for W.}
+#'   \item{beta}{Vector of corrected beta estimates controlled for W.}
+#'   \item{beta.se}{Vector of standard errors of the beta estimates.}
+#'   \item{p.val}{Vector of p-values (without adaptive shrinkage).}
+#'   \item{q.val}{Vector of q-values (without adaptive shrinkage).}
+#'   \item{res.table}{A table with the following columns (values calculated with adaptive shrinkage): \cr
+#'                      betahat: estimated linear coefficient controlled for W. \cr
+#'                      sebetahat: standard error for the estimate of beta. \cr
+#'                      NegativeProb: posterior probabilities that beta is negative. \cr
+#'                      PositiveProb: posterior probabilities that beta is positive \cr
+#'                      lfsr: local and global fsr values. \cr
+#'                      svalue: s-values.\cr
+#'                      lfdr: local and global fdr values. \cr
+#'                      qvalue: q-values for the effect size estimates. \cr
+#'                      PosteriorMean: moderated effect size estimates. \cr
+#'                      PosteriorSD: standard deviations of moderated effect size estimates. \cr
+#'                      dep.var: dependent variables (column names of Y). \cr
+#'                      ind.var: independent variables (column names of X).
+#'                   }
+#'}
 #'
 #' @export
-#' 
-lin_associations = function(A, y, W = NULL, robust.se = F, 
-                            scale.A = T, scale.y = F, is.dependent = T, var.th = 0, coef.var = F){
-  
-  require(corpcor); require(tibble); require(dplyr); require(ashr)
-  
-  mean.na = function(x) mean(x, na.rm = T)
-  
-  N = length(y);
-  y_ = scale(y, center = T, scale = scale.y)
-  if (coef.var) {
-    A_ = A[, apply(A,2,function(x) var(x,na.rm = T)/mean(x,na.rm = T)^2) > var.th]
-    A_ = scale(A_, center = T, scale = scale.A)
-  } else {
-    A_ = A[, apply(A,2,function(x) var(x,na.rm = T)) > var.th]
-    A_ = scale(A_, center = T, scale = scale.A)
-  }
-  N.A = apply(A_, 2, function(x) sum(is.finite(x)))
-  
-  
-  if(is.null(W)) {
-    W_ = matrix(rep(1,N))
-  } else {
-    W_ = cbind(W, rep(1,N))}
-  
-  
-  P = diag(rep(1,N)) -  W_ %*% corpcor::pseudoinverse(t(W_) %*% W_) %*% t(W_)
-  y_ = c(P %*% y_)
-  
-  A.NA = !is.finite(A_)
-  A_ = A_; A_[A.NA] = 0
-  A_ = P %*% A_; A_[A.NA] = NA
+#'
+lin_associations <- function (X, Y, W=NULL, n.min=11, shrinkage=T, alpha=0) {
+  # load necessary packages
+  require(corpcor); require(WGCNA); require(ashr); require(dplyr)
 
-  
-  if(is.dependent){
-    K = apply(A_^2, 2, mean.na) 
-    beta.hat =  apply(A_ * y_, 2, mean.na) / K; 
-    eps.hat = y_ - t(t(A_)* beta.hat)
-  } else {
-    K = apply((A_ < Inf) * y_^2, 2, mean.na)
-    beta.hat =  apply(A_ * y_, 2,  mean.na) / K; 
-    eps.hat = A_ - as.matrix(y_) %*% t(beta.hat)}
-  
-  if(!robust.se){
-    res = tibble::tibble(feature = colnames(A_),
-                         beta.hat = beta.hat,
-                         beta.se = sqrt(apply(eps.hat^2, 2, mean.na) / K / (N.A - 1 - dim(W_)[2])),
-                         p.val = 2*pnorm(-abs(beta.hat / beta.se)),
-                         q.val.BH = p.adjust(p.val, method = "BH"), 
-                         n = N.A)
+  # NA handling
+  X.NA <- !is.finite(X); Y.NA <- !is.finite(Y)
+  N <- (t(!X.NA) %*% (!Y.NA)) - 2
+
+  # if there are provided confounders, calculate P matrix and use to control
+  if (!is.null(W)) {
+    P <- W %*% corpcor::pseudoinverse(t(W) %*% W) %*% t(W)
+    X[X.NA] <- 0; X <- X - (P %*% X); X[X.NA] <- NA
+    Y[Y.NA] <- 0; Y <- Y - (P %*% Y); Y[Y.NA] <- NA
+    N = N - dim(W)[2]
+  }
+
+  # scale matrices
+  X <- scale(X); sx <- attributes(X)$`scaled:scale`
+  Y = scale(Y); sy <- attributes(Y)$`scaled:scale`
+
+  # calculate correlations
+  rho <- WGCNA::cor(X, Y, use = "pairwise.complete.obs")
+
+  # correct correlation estimates
+  beta <- t(t(rho / sx) * sy)
+  beta.se <- t(t(sqrt(1 - rho ^ 2) / sx) * sy) / sqrt(N)
+
+  # generate p and q values (without adaptive shrinkage)
+  p.val <- 2 * pt(-abs(beta / beta.se), N)
+  p.val[N < n.min] <- NA
+  p.val[(sx == 0) | !is.finite(sx), ] <- NA
+  p.val[, (sy == 0) | !is.finite(sy)]  <- NA
+  q.val = apply(p.val, 2, function(x) p.adjust(x, method = "BH"))
+
+  # if shrinkage wanted, generate res.table with adaptive shrinkage results
+  if(shrinkage){
+    res.table <- list()
+    for (ix in 1:dim(Y)[2]) {
+      fin <- is.finite(p.val[, ix])
+      res <- tryCatch(ashr::ash(beta[fin, ix], beta.se[fin, ix],
+                                mixcompdist = "halfuniform", alpha = alpha)$result,
+                      error = function(e) NULL
+      )
+      if (!is.null(res)) {
+        res$dep.var <- colnames(Y)[ix]
+        res$ind.var <- rownames(res)
+        res.table[[ix]] <- res
+      }
+    }
+    res.table <- dplyr::bind_rows(res.table)
   } else{
-    res = tibble::tibble(feature = colnames(A_),
-                         beta.hat = beta.hat,
-                         beta.se = sqrt(apply(A_^2 * eps.hat^2, 2, mean.na) / (N.A - 1 - dim(W_)[2]))/K , 
-                         p.val = 2*pnorm(-abs(beta.hat / beta.se)),
-                         q.val.BH = p.adjust(p.val, method = "BH"),
-                         n = N.A)}
-  
-  res$beta.se[res$beta.se < .000001] <- .000001 # deals with bug in ash
-  res = dplyr::bind_cols(res[,c(1,4,5,6)], 
-                         ashr::ash(res$beta.hat, res$beta.se)$result[,c(1,2,7,8,9,10)])
-  
-  res %<>%dplyr::mutate(z.score = PosteriorMean/PosteriorSD)
-  
-  return(res)
-}  
+    res.table <- NULL
+  }
+
+  return(list(
+    N = N,
+    rho = rho,
+    beta = beta,
+    beta.se = beta.se,
+    p.val = p.val,
+    q.val = q.val,
+    res.table = res.table
+  ))
+}
 
 #' Estimate linear-model stats for a matrix of data using limma with empirical Bayes moderated t-stats for p-values
 #'
@@ -125,7 +130,7 @@ run_lm_stats_limma <- function(mat, vec, covars = NULL, weights = NULL,
   require(tibble)
   require(plyr)
   require(dplyr)
-  
+
   udata <- which(!is.na(vec))
   if (!is.numeric(vec)) {
     pred <- factor(vec[udata])
@@ -161,18 +166,20 @@ run_lm_stats_limma <- function(mat, vec, covars = NULL, weights = NULL,
       weights <- weights[udata]
     }
   }
+
   fit <- limma::lmFit(t(mat[udata,]), design, weights = weights)
   fit <- limma::eBayes(fit, trend = limma_trend)
   targ_coef <- grep('pred', colnames(design), value = TRUE)
   results <- limma::topTable(fit, coef = targ_coef, number = Inf)
-  
+
   if (colnames(results)[1] == 'ID') {
     colnames(results)[1] <- target_type
   } else {
     results %<>% rownames_to_column(var = target_type)
   }
+
   results$min_samples <- min_samples[results[[target_type]]]
-  
+
   two_to_one_sided <- function(two_sided_p, stat, test_dir) {
     #helper function for converting two-sided p-values to one-sided p-values
     one_sided_p <- two_sided_p / 2
@@ -183,12 +190,18 @@ run_lm_stats_limma <- function(mat, vec, covars = NULL, weights = NULL,
     }
     return(one_sided_p)
   }
-  results %<>% set_colnames(revalue(colnames(.), c('logFC' = 'EffectSize', 'AveExpr' = 'Avg', 't' = 't_stat', 'B' = 'log_odds',
-                                                   'P.Value' = 'p.value', 'adj.P.Val' = 'q.value', 'min_samples' = 'min_samples'))) %>% na.omit()
-  results %<>% dplyr::mutate(p.left = two_to_one_sided(p.value, EffectSize, 'left'),
-                             p.right = two_to_one_sided(p.value, EffectSize, 'right'),
-                             q.left = p.adjust(p.left, method = 'BH'),
-                             q.right = p.adjust(p.right, method = 'BH'))
+
+  results %<>%
+    set_colnames(revalue(colnames(.), c('logFC' = 'EffectSize', 'AveExpr' = 'Avg',
+                                        't' = 't_stat', 'B' = 'log_odds',
+                                        'P.Value' = 'p.value', 'adj.P.Val' = 'q.value',
+                                        'min_samples' = 'min_samples'))) %>%
+    na.omit()
+  results %<>%
+    dplyr::mutate(p.left = two_to_one_sided(p.value, EffectSize, 'left'),
+                  p.right = two_to_one_sided(p.value, EffectSize, 'right'),
+                  q.left = p.adjust(p.left, method = 'BH'),
+                  q.right = p.adjust(p.right, method = 'BH'))
   return(results)
 }
 

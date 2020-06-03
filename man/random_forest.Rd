@@ -9,25 +9,25 @@ random_forest(X, y, k = 10, n = 500)
 \arguments{
 \item{X}{n x m numerical matrix of features (missing values are allowed).}
 
-\item{y}{length n vector of numerical values (missing values are allowed).}
+\item{y}{Length n vector of numerical values (missing values are allowed).}
 
-\item{k}{integer number of cross validation cycles to perform.}
+\item{k}{Integer number of cross validation cycles to perform.}
 
-\item{n}{number of features to be considered in the model (after correlation filter).}
+\item{n}{Number of features to be considered in the model (after correlation filter).}
 }
 \value{
-a list with components
+A list with components:
 \describe{
   \item{model_table}{A table with the following columns: \cr
   feature: the column names of X. \cr
-  RF.imp.mean: an estimate of the importance of that feature for model accuracy. \cr 
-  RF.imp.sd: the standard deviation of the importance estimate. \cr 
+  RF.imp.mean: an estimate of the importance of that feature for model accuracy. \cr
+  RF.imp.sd: the standard deviation of the importance estimate. \cr
   RF.imp.stability: the proportion of models that used this feature. \cr
-  rank: the rank of the feature in terms of importance for the model. \cr 
-  MSE: the mean-squared error of the model. \cr 
+  rank: the rank of the feature in terms of importance for the model. \cr
+  MSE: the mean-squared error of the model. \cr
   MSE.se: the standard error of the MSE. \cr
   R2: the \eqn{R^2} of the model. \cr
-  PearsonScore: the Pearson correlation of predicted and observed responses. \cr 
+  PearsonScore: the Pearson correlation of predicted and observed responses. \cr
   }
   \item{predictions}{A vector of the responses predicted by the random forest.}
 }

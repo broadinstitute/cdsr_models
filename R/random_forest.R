@@ -5,22 +5,22 @@ require(ranger)
 #' Fits a random forest from a matrix or features X and a vector y.
 #'
 #' @param X n x m numerical matrix of features (missing values are allowed).
-#' @param y length n vector of numerical values (missing values are allowed).
-#' @param k integer number of cross validation cycles to perform.
-#' @param n number of features to be considered in the model (after correlation filter).
+#' @param y Length n vector of numerical values (missing values are allowed).
+#' @param k Integer number of cross validation cycles to perform.
+#' @param n Number of features to be considered in the model (after correlation filter).
 #'
-#' @return a list with components
+#' @return A list with components:
 #' \describe{
 #'   \item{model_table}{A table with the following columns: \cr
 #'   feature: the column names of X. \cr
-#'   RF.imp.mean: an estimate of the importance of that feature for model accuracy. \cr 
-#'   RF.imp.sd: the standard deviation of the importance estimate. \cr 
+#'   RF.imp.mean: an estimate of the importance of that feature for model accuracy. \cr
+#'   RF.imp.sd: the standard deviation of the importance estimate. \cr
 #'   RF.imp.stability: the proportion of models that used this feature. \cr
-#'   rank: the rank of the feature in terms of importance for the model. \cr 
-#'   MSE: the mean-squared error of the model. \cr 
+#'   rank: the rank of the feature in terms of importance for the model. \cr
+#'   MSE: the mean-squared error of the model. \cr
 #'   MSE.se: the standard error of the MSE. \cr
 #'   R2: the \eqn{R^2} of the model. \cr
-#'   PearsonScore: the Pearson correlation of predicted and observed responses. \cr 
+#'   PearsonScore: the Pearson correlation of predicted and observed responses. \cr
 #'   }
 #'   \item{predictions}{A vector of the responses predicted by the random forest.}
 #' }
@@ -28,14 +28,14 @@ require(ranger)
 #' @export
 #'
 random_forest <- function(X, y, k = 10, n = 500){
-  y <- y[is.finite(y)]  # only finite values
+  y <- y[is.finite(y)]  # only finite/non-missing values
   X <- X[, apply(X, 2, function(x) !any(is.na(x)))]
-  
+
   # make sure data aligns
   cl <- sample(dplyr::intersect(rownames(X), names(y)))  # overlapping rows
   X <- scale(X[cl,])  # scales the columns of X and selects overlapping lines
   y <- y[cl]  # selects overlapping lines from y
-  
+
   colnames(X) %<>% make.names()  # ensure unique column names
 
   N = floor(length(cl)/k)  # size of each test set (dataset size / num cv cycles)

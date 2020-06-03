@@ -21,5 +21,6 @@ Imports:
   stats,
   taigr,
   tidyverse,
-  useful
-RoxygenNote: 6.1.1
+  useful,
+  WGCNA
+RoxygenNote: 7.1.0

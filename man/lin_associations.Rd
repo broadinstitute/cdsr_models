@@ -4,43 +4,45 @@
 \alias{lin_associations}
 \title{Calculates the linear association between a matrix of features A and a vector y.}
 \usage{
-lin_associations(A, y, W = NULL, robust.se = F, scale.A = T,
-  scale.y = F, is.dependent = T, var.th = 0, coef.var = F)
+lin_associations(X, Y, W = NULL, n.min = 11, shrinkage = T, alpha = 0)
 }
 \arguments{
-\item{A}{n x m numerical matrix of features (missing values are allowed).}
+\item{X}{n x m numerical matrix of features (missing values are allowed).}
 
-\item{y}{length n vector of numerical values (missing values are not allowed)}
+\item{Y}{n x p numerical matrix of responses (missing values are allowed)}
 
 \item{W}{n x p numerical matrix of confounders (missing values are not allowed).}
 
-\item{robust.se}{boolean flag to control if homoskedastic or heteroskedastic.}
+\item{shrinkage}{Boolean to control whether adaptive shrinkage should be applied.}
 
-\item{scale.A}{boolean to control if the columns of A to be scaled or not.}
+\item{alpha}{Numeric value controling the alpha value for adaptive shrinkage.}
 
-\item{scale.y}{boolen to control if the variance of y should be scaled to 1.}
-
-\item{is.dependent}{should y be considered as a dependent or independent variable}
-
-\item{var.th}{float minimum variation of included feature}
-
-\item{coef.var}{boolean to control if the coefficient of variation is used.}
+\item{robust.se}{Boolean flag to control if homoskedastic or heteroskedastic.}
 }
 \value{
-A table with the following columns:
+A list with components:
 \describe{
-feature:  column names of A \cr
-p.val: p-values computed for the null-hypothesis beta = 0 \cr
-q.val: q-values computed using Benjamini-Hotchberg method \cr
-n: number of non-missing values for each column of A \cr
-betahat: estimated linear coefficient controlled for W \cr
-sebetahat: standard error for the estimate of beta \cr
-sebetahat: standard error for the estimate of beta \cr
-lfdr: local and global fdr values computed using adaptive shrinkage as \cr
-qvalue: local and global fdr values computed using adaptive shrinkage as \cr
-PosteriorMean: moderated effect size estimates again computed with adaptive shrinkage \cr
-PosteriorSD: standard deviations of moderated effect size estimates \cr
-z.score: z-score PosteriorMean/PosteriorSD}
+  \item{N}{Vector of degrees of freedom for each feature.}
+  \item{rho}{Vector of uncorrected beta estimates controlled for W.}
+  \item{beta}{Vector of corrected beta estimates controlled for W.}
+  \item{beta.se}{Vector of standard errors of the beta estimates.}
+  \item{p.val}{Vector of p-values (without adaptive shrinkage).}
+  \item{q.val}{Vector of q-values (without adaptive shrinkage).}
+  \item{res.table}{A table with the following columns (values calculated with adaptive shrinkage): \cr
+                     betahat: estimated linear coefficient controlled for W. \cr
+                     sebetahat: standard error for the estimate of beta. \cr
+                     NegativeProb: posterior probabilities that beta is negative. \cr
+                     PositiveProb: posterior probabilities that beta is positive \cr
+                     lfsr: local and global fsr values. \cr
+                     svalue: s-values.\cr
+                     lfdr: local and global fdr values. \cr
+                     qvalue: q-values for the effect size estimates. \cr
+                     PosteriorMean: moderated effect size estimates. \cr
+                     PosteriorSD: standard deviations of moderated effect size estimates. \cr
+                     dep.var: dependent variables (column names of Y). \cr
+                     ind.var: independent variables (column names of X).
+                  }
+}
 }
 \description{
 Calculates the linear association between a matrix of features A and a vector y.
