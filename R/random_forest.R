@@ -36,7 +36,7 @@ random_forest <- function(X, y, k = 10, n = 500){
   X.clean <- X.clean[cl,] # selects overlapping lines from X
   y.clean <- y.clean[cl]  # selects overlapping lines from y
 
-  colnames(X) %<>% make.names()  # ensure unique column names
+  colnames(X.clean) %<>% make.names()  # ensure unique column names
 
   N = floor(length(cl)/k)  # size of each test set (dataset size / num cv cycles)
   yhat_rf <- y.clean  # vector to store predicted values of y
@@ -53,8 +53,6 @@ random_forest <- function(X, y, k = 10, n = 500){
     X_test <- X.clean[test,]
 
     X_train <- X_train[,apply(X_train,2,var) > 0]  # remove columns with variance 0
-    print(dim(X_train))
-    print(any(is.na(X_train)))
 
     # select top n correlated features in X (this filters to "relevant" features)
     # allows for faster model fitting
