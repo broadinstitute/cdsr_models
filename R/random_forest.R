@@ -28,18 +28,18 @@ require(ranger)
 #' @export
 #'
 random_forest <- function(X, y, k = 10, n = 500){
-  y <- y[is.finite(y)]  # only finite/non-missing values
-  X <- X[, apply(X, 2, function(x) !any(is.na(x)))]
+  y.clean <- y[is.finite(y)]  # only finite/non-missing values
+  X.clean <- X[, apply(X, 2, function(x) !any(is.na(x)))]
 
   # make sure data aligns
-  cl <- sample(dplyr::intersect(rownames(X), names(y)))  # overlapping rows
-  X <- scale(X[cl,])  # scales the columns of X and selects overlapping lines
-  y <- y[cl]  # selects overlapping lines from y
+  cl <- sample(dplyr::intersect(rownames(X.clean), names(y.clean)))  # overlapping rows
+  X.clean <- scale(X.clean[cl,])  # scales the columns of X and selects overlapping lines
+  y.clean <- y.clean[cl]  # selects overlapping lines from y
 
   colnames(X) %<>% make.names()  # ensure unique column names
 
   N = floor(length(cl)/k)  # size of each test set (dataset size / num cv cycles)
-  yhat_rf <- y  # vector to store predicted values of y
+  yhat_rf <- y.clean  # vector to store predicted values of y
 
   SS = tibble()  # empty table to store output
 
@@ -49,19 +49,19 @@ random_forest <- function(X, y, k = 10, n = 500){
     train <- dplyr::setdiff(cl, test)  # everything else is training
 
     # select training and test data from X, assumes no NAs in X
-    X_train <- X[train,]
-    X_test <- X[test,]
+    X_train <- X.clean[train,]
+    X_test <- X.clean[test,]
 
     X_train <- X_train[,apply(X_train,2,var) > 0]  # remove columns with variance 0
 
     # select top n correlated features in X (this filters to "relevant" features)
     # allows for faster model fitting
-    X_train <- X_train[,rank(-abs(cor(X_train,y[train]))) <= n]
+    X_train <- X_train[,rank(-abs(stats::cor(X_train, y.clean[train]))) <= n]
 
     # fit a random forest model using the ranger package
     # uses impurity as varaible importance metric
     rf <- ranger::ranger(y ~ .,
-                         data = as.data.frame(cbind(X_train, y = y[train])),
+                         data = as.data.frame(cbind(X_train, y = y.clean[train])),
                          importance = "impurity")
 
     # add predictions for test set to prediction vector
@@ -100,10 +100,10 @@ random_forest <- function(X, y, k = 10, n = 500){
   # model level statistics
   # MSE = mean-squared error of predictions, MSE.se = standard deviation of MSE
   # R2 and Pearson are measures of model accuracy
-  mse <- mean((yhat_rf - y)^2)
-  mse.se <- sqrt(var((yhat_rf - y)^2))/sqrt(length(y))
-  r2 <- 1 - (mse/var(y))
-  ps <- cor(y, yhat_rf, use = "pairwise.complete.obs")
+  mse <- mean((yhat_rf - y.clean)^2)
+  mse.se <- sqrt(var((yhat_rf - y.clean)^2))/sqrt(length(y.clean))
+  r2 <- 1 - (mse/var(y.clean))
+  ps <- cor(y.clean, yhat_rf, use = "pairwise.complete.obs")
   RF.table %<>%
     dplyr::mutate(MSE = mse,
                   MSE.se = mse.se,
