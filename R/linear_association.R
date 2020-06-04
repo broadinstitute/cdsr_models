@@ -1,9 +1,9 @@
 require(magrittr)
 require(ashr)
 require(limma)
-require(corpcor);
-require(WGCNA);
-require(ashr);
+require(corpcor)
+require(WGCNA)
+require(ashr)
 require(plyr)
 require(tidyverse)
 
@@ -191,7 +191,7 @@ run_lm_stats_limma <- function(mat, vec, covars = NULL, weights = NULL,
   }
 
   results %<>%
-    set_colnames(revalue(colnames(.), c('logFC' = 'EffectSize', 'AveExpr' = 'Avg',
+    set_colnames(plyr::revalue(colnames(.), c('logFC' = 'EffectSize', 'AveExpr' = 'Avg',
                                         't' = 't_stat', 'B' = 'log_odds',
                                         'P.Value' = 'p.value', 'adj.P.Val' = 'q.value',
                                         'min_samples' = 'min_samples'))) %>%

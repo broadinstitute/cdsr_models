@@ -1,4 +1,5 @@
 require(tidyverse)
+require(limma)
 
 #' Performs t-tests on a matrix of binary features and a vector y.
 #'
