@@ -1,6 +1,11 @@
-require(tidyverse)
 require(magrittr)
 require(ashr)
+require(limma)
+require(corpcor);
+require(WGCNA);
+require(ashr);
+require(plyr)
+require(tidyverse)
 
 #' Calculates the linear association between a matrix of features A and a vector y.
 #'
@@ -39,7 +44,6 @@ require(ashr)
 #'
 lin_associations <- function (X, Y, W=NULL, n.min=11, shrinkage=T, alpha=0) {
   # load necessary packages
-  require(corpcor); require(WGCNA); require(ashr); require(dplyr)
 
   # NA handling
   X.NA <- !is.finite(X); Y.NA <- !is.finite(Y)
@@ -125,11 +129,6 @@ lin_associations <- function (X, Y, W=NULL, n.min=11, shrinkage=T, alpha=0) {
 #' @export run_lm_stats_limma
 run_lm_stats_limma <- function(mat, vec, covars = NULL, weights = NULL,
                                target_type = 'Gene', limma_trend = FALSE) {
-  require(limma)
-  require(magrittr)
-  require(tibble)
-  require(plyr)
-  require(dplyr)
 
   udata <- which(!is.na(vec))
   if (!is.numeric(vec)) {

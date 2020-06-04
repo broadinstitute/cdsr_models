@@ -23,4 +23,6 @@ Imports:
   tidyverse,
   useful,
   WGCNA
+biocViews:
+  WGCNA
 RoxygenNote: 7.1.0
