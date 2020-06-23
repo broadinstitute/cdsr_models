@@ -42,7 +42,8 @@ require(tidyverse)
 #'
 #' @export
 #'
-lin_associations <- function (X, Y, W=NULL, n.min=11, shrinkage=T, alpha=0) {
+lin_associations <- function (X, Y, W=NULL, n.min=11, shrinkage=T, alpha=0,
+                              X.ind=T) {
   # load necessary packages
 
   # NA handling
@@ -78,16 +79,31 @@ lin_associations <- function (X, Y, W=NULL, n.min=11, shrinkage=T, alpha=0) {
   # if shrinkage wanted, generate res.table with adaptive shrinkage results
   if(shrinkage){
     res.table <- list()
-    for (ix in 1:dim(Y)[2]) {
-      fin <- is.finite(p.val[, ix])
-      res <- tryCatch(ashr::ash(beta[fin, ix], beta.se[fin, ix],
-                                mixcompdist = "halfuniform", alpha = alpha)$result,
-                      error = function(e) NULL
-      )
-      if (!is.null(res)) {
-        res$dep.var <- colnames(Y)[ix]
-        res$ind.var <- rownames(res)
-        res.table[[ix]] <- res
+    if (X.ind) {
+      for (ix in 1:dim(Y)[2]) {
+        fin <- is.finite(p.val[, ix])
+        res <- tryCatch(ashr::ash(beta[fin, ix], beta.se[fin, ix],
+                                  mixcompdist = "halfuniform", alpha = alpha)$result,
+                        error = function(e) NULL
+        )
+        if (!is.null(res)) {
+          res$dep.var <- colnames(Y)[ix]
+          res$ind.var <- rownames(res)
+          res.table[[ix]] <- res
+        }
+      }
+    } else {
+      for (ix in 1:dim(X)[2]) {
+        fin <- is.finite(p.val[ix, ])
+        res <- tryCatch(ashr::ash(beta[ix, fin], beta.se[ix, fin],
+                                  mixcompdist = "halfuniform", alpha = alpha)$result,
+                        error = function(e) NULL
+        )
+        if (!is.null(res)) {
+          res$dep.var <- colnames(X)[ix]
+          res$ind.var <- rownames(res)
+          res.table[[ix]] <- res
+        }
       }
     }
     res.table <- dplyr::bind_rows(res.table)
