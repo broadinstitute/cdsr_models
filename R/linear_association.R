@@ -89,6 +89,7 @@ lin_associations <- function (X, Y, W=NULL, n.min=11, shrinkage=T, alpha=0,
         if (!is.null(res)) {
           res$dep.var <- colnames(Y)[ix]
           res$ind.var <- rownames(res)
+          res$p.val <- p.val[fin, ix]
           res.table[[ix]] <- res
         }
       }
@@ -102,6 +103,7 @@ lin_associations <- function (X, Y, W=NULL, n.min=11, shrinkage=T, alpha=0,
         if (!is.null(res)) {
           res$dep.var <- colnames(X)[ix]
           res$ind.var <- rownames(res)
+          res$p.val <- p.val[ix, fin]
           res.table[[ix]] <- res
         }
       }
