@@ -42,7 +42,7 @@ require(tidyverse)
 #'
 #' @export
 #'
-lin_associations <- function (X, Y, W=NULL, n.min=11, shrinkage=T, alpha=0,
+lin_associations <- function (X, Y, W=NULL, n.min=2, shrinkage=T, alpha=0,
                               X.ind=T) {
   # load necessary packages
 
