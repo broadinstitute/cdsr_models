@@ -4,8 +4,15 @@
 \alias{lin_associations}
 \title{Calculates the linear association between a matrix of features A and a vector y.}
 \usage{
-lin_associations(X, Y, W = NULL, n.min = 11, shrinkage = T,
-  alpha = 0)
+lin_associations(
+  X,
+  Y,
+  W = NULL,
+  n.min = 4,
+  shrinkage = T,
+  alpha = 0,
+  X.ind = T
+)
 }
 \arguments{
 \item{X}{n x m numerical matrix of features (missing values are allowed).}
