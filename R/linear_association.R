@@ -82,10 +82,10 @@ lin_associations <- function (X, Y, W=NULL, n.min=4, shrinkage=T, alpha=0,
     if (X.ind) {
       for (ix in 1:dim(Y)[2]) {
         fin <- is.finite(p.val[, ix])
-        res <- tryCatch(ashr::ash(beta[fin, ix], beta.se[fin, ix],
-                                  mixcompdist = "halfuniform", alpha = alpha)$result,
-                        error = function(e) NULL
-        )
+        adj_beta.se <- beta.se[fin, ix];
+        adj_beta.se[which(adj_beta.se == 0)] <- 1e-10
+        res <- ashr::ash(beta[fin, ix], adj_beta.se,
+                                  mixcompdist = "halfuniform", alpha = alpha)$result
         if (!is.null(res)) {
           res$dep.var <- colnames(Y)[ix]
           res$ind.var <- rownames(res)
@@ -96,7 +96,9 @@ lin_associations <- function (X, Y, W=NULL, n.min=4, shrinkage=T, alpha=0,
     } else {
       for (ix in 1:dim(X)[2]) {
         fin <- is.finite(p.val[ix, ])
-        res <- tryCatch(ashr::ash(beta[ix, fin], beta.se[ix, fin],
+        adj_beta.se <- beta.se[ix, fin];
+        adj_beta.se[which(adj_beta.se == 0)] <- 1e-10
+        res <- tryCatch(ashr::ash(beta[ix, fin], adj_beta.se,
                                   mixcompdist = "halfuniform", alpha = alpha)$result,
                         error = function(e) NULL
         )
