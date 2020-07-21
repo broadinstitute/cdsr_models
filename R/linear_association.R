@@ -12,9 +12,10 @@ require(tidyverse)
 #' @param X n x m numerical matrix of features (missing values are allowed).
 #' @param Y n x p numerical matrix of responses (missing values are allowed)
 #' @param W n x p numerical matrix of confounders (missing values are not allowed).
-#' @param robust.se Boolean flag to control if homoskedastic or heteroskedastic.
+#' @param n.min Numeric value controlling the minimum degrees of freedom required for p-values.
 #' @param shrinkage Boolean to control whether adaptive shrinkage should be applied.
 #' @param alpha Numeric value controling the alpha value for adaptive shrinkage.
+#' @param X.ind Boolean indicating whether X is the independent variable.
 #'
 #' @return A list with components:
 #' \describe{
