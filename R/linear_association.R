@@ -145,59 +145,6 @@ lin_associations = function (X,
   )
 }
 
-library(tidyverse)
-library(useful)
-
-#----
-# USE CASE 1
-#----
-
-set.seed(0)
-features <-
-  cbind(rnorm(1000), rnorm(1000), c(rnorm(500), rnorm(500) + 1))
-group <- c(rep(0, 500), rep(1, 500))
-
-data = bind_cols(g = group, as.tibble(features))
-data %>%
-  tidyr::gather("feature", "value", 2:4) %>%
-  ggplot() +
-  geom_boxplot(aes(x = feature, y = value, color = g == 1))
-
-
-# Mustafa's notes:
-# 1. The models we fit always has the form y ~ x,
-# where y i a column of Y and x is a column of X.
-# 2. With just couple of models to fit, shrinkage
-# doesn't really make sense.
-# 3. In this case I think it is appropriate to
-# present .$beta and .$q.val but PosteriorMean and
-# qvalue columns of .$res are also pretty similar.
-# 4. I renamed X.ind and define a default :), in the
-# new form, it should be "x" since we will be looking
-# the results of a single column of X and multiple
-# columns of Y at each plot.
-
-lin_associations(X = group, Y = features,
-                 shrinkage = T)
-
-
-# ----
-# USE CASE 2
-# ----
-
-set.seed(1)
-profile <- rnorm(1000)
-features <- cbind(rnorm(1000),
-                  rnorm(1000),
-                  rnorm(1000) * 0.5 + profile + 5)
-
-cbind(features, profile) %>%
-  psych::pairs.panels()
-
-lin_associations(features, profile)
-
-# ----
-
 
 
 
