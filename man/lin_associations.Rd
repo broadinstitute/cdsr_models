@@ -21,11 +21,13 @@ lin_associations(
 
 \item{W}{n x p numerical matrix of confounders (missing values are not allowed).}
 
+\item{n.min}{Numeric value controlling the minimum degrees of freedom required for p-values.}
+
 \item{shrinkage}{Boolean to control whether adaptive shrinkage should be applied.}
 
 \item{alpha}{Numeric value controling the alpha value for adaptive shrinkage.}
 
-\item{robust.se}{Boolean flag to control if homoskedastic or heteroskedastic.}
+\item{X.ind}{Boolean indicating whether X is the independent variable.}
 }
 \value{
 A list with components:
