@@ -43,50 +43,59 @@ require(tidyverse)
 #'
 #' @export
 #'
-lin_associations <- function (X, Y, W=NULL, n.min=4, shrinkage=T, alpha=0,
-                              X.ind=T) {
-  # load necessary packages
-
-  # NA handling
-  X.NA <- !is.finite(X); Y.NA <- !is.finite(Y)
+lin_associations = function (X,
+                             Y,
+                             W = NULL,
+                             n.min = 4,
+                             shrinkage = T,
+                             alpha = 0,
+                             MHC_direction = NULL) {
+  if (is.null(MHC_direction)) {
+    MHC_direction = ifelse(length(Y) >= length(X), "x", "y")
+  }
+  X.NA <- !is.finite(X)
+  Y.NA <- !is.finite(Y)
   N <- (t(!X.NA) %*% (!Y.NA)) - 2
-
-  # if there are provided confounders, calculate P matrix and use to control
   if (!is.null(W)) {
     P <- W %*% corpcor::pseudoinverse(t(W) %*% W) %*% t(W)
-    X[X.NA] <- 0; X <- X - (P %*% X); X[X.NA] <- NA
-    Y[Y.NA] <- 0; Y <- Y - (P %*% Y); Y[Y.NA] <- NA
+    X[X.NA] <- 0
+    X <- X - (P %*% X)
+    X[X.NA] <- NA
+    Y[Y.NA] <- 0
+    Y <- Y - (P %*% Y)
+    Y[Y.NA] <- NA
     N = N - dim(W)[2]
   }
-
-  # scale matrices
-  X <- scale(X); sx <- attributes(X)$`scaled:scale`
-  Y = scale(Y); sy <- attributes(Y)$`scaled:scale`
-
-  # calculate correlations
+  X <- scale(X)
+  sx <- attributes(X)$`scaled:scale`
+  Y = scale(Y)
+  sy <- attributes(Y)$`scaled:scale`
   rho <- WGCNA::cor(X, Y, use = "pairwise.complete.obs")
-
-  # correct correlation estimates
   beta <- t(t(rho / sx) * sy)
   beta.se <- t(t(sqrt(1 - rho ^ 2) / sx) * sy) / sqrt(N)
-
-  # generate p and q values (without adaptive shrinkage)
   p.val <- 2 * pt(-abs(beta / beta.se), N)
   p.val[N < n.min] <- NA
-  p.val[(sx == 0) | !is.finite(sx), ] <- NA
-  p.val[, (sy == 0) | !is.finite(sy)]  <- NA
-  q.val = apply(p.val, 2, function(x) p.adjust(x, method = "BH"))
-
-  # if shrinkage wanted, generate res.table with adaptive shrinkage results
-  if(shrinkage){
+  p.val[(sx == 0) | !is.finite(sx),] <- NA
+  p.val[, (sy == 0) | !is.finite(sy)] <- NA
+  
+  if (MHC_direction == "y") {
+    q.val = apply(p.val, 2, function(x)
+      p.adjust(x, method = "BH"))
+  } else{
+    q.val = t(apply(p.val, 1, function(x)
+      p.adjust(x, method = "BH")))
+  }
+  if (shrinkage) {
     res.table <- list()
-    if (X.ind) {
+    if (MHC_direction == "y") {
       for (ix in 1:dim(Y)[2]) {
         fin <- is.finite(p.val[, ix])
-        adj_beta.se <- beta.se[fin, ix];
+        adj_beta.se <- beta.se[fin, ix]
         adj_beta.se[which(adj_beta.se == 0)] <- 1e-10
-        res <- ashr::ash(beta[fin, ix], adj_beta.se,
-                                  mixcompdist = "halfuniform", alpha = alpha)$result
+        res <- ashr::ash(beta[fin, ix],
+                         adj_beta.se,
+                         mixcompdist = "halfuniform",
+                         alpha = alpha)$result
         if (!is.null(res)) {
           res$dep.var <- colnames(Y)[ix]
           res$ind.var <- rownames(res)
@@ -94,14 +103,21 @@ lin_associations <- function (X, Y, W=NULL, n.min=4, shrinkage=T, alpha=0,
           res.table[[ix]] <- res
         }
       }
-    } else {
+    }
+    else {
       for (ix in 1:dim(X)[2]) {
-        fin <- is.finite(p.val[ix, ])
-        adj_beta.se <- beta.se[ix, fin];
+        fin <- is.finite(p.val[ix,])
+        adj_beta.se <- beta.se[ix, fin]
         adj_beta.se[which(adj_beta.se == 0)] <- 1e-10
-        res <- tryCatch(ashr::ash(beta[ix, fin], adj_beta.se,
-                                  mixcompdist = "halfuniform", alpha = alpha)$result,
-                        error = function(e) NULL
+        res <- tryCatch(
+          ashr::ash(
+            beta[ix, fin],
+            adj_beta.se,
+            mixcompdist = "halfuniform",
+            alpha = alpha
+          )$result,
+          error = function(e)
+            NULL
         )
         if (!is.null(res)) {
           res$dep.var <- rownames(res)
@@ -112,20 +128,78 @@ lin_associations <- function (X, Y, W=NULL, n.min=4, shrinkage=T, alpha=0,
       }
     }
     res.table <- dplyr::bind_rows(res.table)
-  } else{
+  }
+  else {
     res.table <- NULL
   }
-
-  return(list(
-    N = N,
-    rho = rho,
-    beta = beta,
-    beta.se = beta.se,
-    p.val = p.val,
-    q.val = q.val,
-    res.table = res.table
-  ))
+  return(
+    list(
+      N = N,
+      rho = rho,
+      beta = beta,
+      beta.se = beta.se,
+      p.val = p.val,
+      q.val = q.val,
+      res.table = res.table
+    )
+  )
 }
+
+library(tidyverse)
+library(useful)
+
+#----
+# USE CASE 1
+#----
+
+set.seed(0)
+features <-
+  cbind(rnorm(1000), rnorm(1000), c(rnorm(500), rnorm(500) + 1))
+group <- c(rep(0, 500), rep(1, 500))
+
+data = bind_cols(g = group, as.tibble(features))
+data %>%
+  tidyr::gather("feature", "value", 2:4) %>%
+  ggplot() +
+  geom_boxplot(aes(x = feature, y = value, color = g == 1))
+
+
+# Mustafa's notes:
+# 1. The models we fit always has the form y ~ x,
+# where y i a column of Y and x is a column of X.
+# 2. With just couple of models to fit, shrinkage
+# doesn't really make sense.
+# 3. In this case I think it is appropriate to
+# present .$beta and .$q.val but PosteriorMean and
+# qvalue columns of .$res are also pretty similar.
+# 4. I renamed X.ind and define a default :), in the
+# new form, it should be "x" since we will be looking
+# the results of a single column of X and multiple
+# columns of Y at each plot.
+
+lin_associations(X = group, Y = features,
+                 shrinkage = T)
+
+
+# ----
+# USE CASE 2
+# ----
+
+set.seed(1)
+profile <- rnorm(1000)
+features <- cbind(rnorm(1000),
+                  rnorm(1000),
+                  rnorm(1000) * 0.5 + profile + 5)
+
+cbind(features, profile) %>%
+  psych::pairs.panels()
+
+lin_associations(features, profile)
+
+# ----
+
+
+
 
 #' Estimate linear-model stats for a matrix of data using limma with empirical Bayes moderated t-stats for p-values
 #'
