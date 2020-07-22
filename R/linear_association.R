@@ -3,7 +3,6 @@ require(ashr)
 require(limma)
 require(corpcor)
 require(WGCNA)
-require(ashr)
 require(plyr)
 require(tidyverse)
 
