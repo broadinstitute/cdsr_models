@@ -66,10 +66,19 @@ lin_associations = function (X,
     Y[Y.NA] <- NA
     N = N - dim(W)[2]
   }
-  X <- scale(X)
-  sx <- attributes(X)$`scaled:scale`
-  Y = scale(Y)
-  sy <- attributes(Y)$`scaled:scale`
+  
+  f = function(A) {
+    if (is.matrix(A)) {
+      res = apply(A, 2, function(x)
+        sd(x, na.rm = T))
+    } else{
+      res = sd(A, na.rm = T)
+    }
+    return(res)
+  }
+  sx <- f(X)
+  sy <- f(Y)
+  
   rho <- WGCNA::cor(X, Y, use = "pairwise.complete.obs")
   beta <- t(t(rho / sx) * sy)
   beta.se <- t(t(sqrt(1 - rho ^ 2) / sx) * sy) / sqrt(N)
@@ -88,7 +97,7 @@ lin_associations = function (X,
   if (shrinkage) {
     res.table <- list()
     if (MHC_direction == "y") {
-      for (ix in 1:dim(Y)[2]) {
+      for (ix in 1:dim(p.val)[2]) {
         fin <- is.finite(p.val[, ix])
         adj_beta.se <- beta.se[fin, ix]
         adj_beta.se[which(adj_beta.se == 0)] <- 1e-10
@@ -105,7 +114,7 @@ lin_associations = function (X,
       }
     }
     else {
-      for (ix in 1:dim(X)[2]) {
+      for (ix in 1:dim(p.val)[1]) {
         fin <- is.finite(p.val[ix,])
         adj_beta.se <- beta.se[ix, fin]
         adj_beta.se[which(adj_beta.se == 0)] <- 1e-10
@@ -144,7 +153,6 @@ lin_associations = function (X,
     )
   )
 }
-
 
 
 
