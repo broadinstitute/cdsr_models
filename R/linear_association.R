@@ -148,6 +148,7 @@ lin_associations = function (X,
 
 
 
+
 #' Estimate linear-model stats for a matrix of data using limma with empirical Bayes moderated t-stats for p-values
 #'
 #' @param mat: Nxp data matrix with N cell lines and p genes
