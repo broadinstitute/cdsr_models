@@ -83,7 +83,7 @@ lin_associations = function (X,
   beta.se <- t(t(sqrt(1 - rho ^ 2) / sx) * sy) / sqrt(N)
   p.val <- 2 * pt(-abs(beta / beta.se), N)
   p.val[N < n.min] <- NA
-  p.val[(sx == 0) | !is.finite(sx),] <- NA
+  p.val[(sx == 0) | !is.finite(sx), ] <- NA
   p.val[, (sy == 0) | !is.finite(sy)] <- NA
   
   if (MHC_direction == "y") {
@@ -98,10 +98,8 @@ lin_associations = function (X,
     if (MHC_direction == "y") {
       for (ix in 1:dim(p.val)[2]) {
         fin <- is.finite(p.val[, ix])
-        adj_beta.se <- beta.se[fin, ix]
-        adj_beta.se[which(adj_beta.se == 0)] <- 1e-10
         res <- ashr::ash(beta[fin, ix],
-                         adj_beta.se,
+                         pmax(beta.se[fin, ix], 1e-10),
                          mixcompdist = "halfuniform",
                          alpha = alpha)$result
         if (!is.null(res)) {
@@ -114,13 +112,11 @@ lin_associations = function (X,
     }
     else {
       for (ix in 1:dim(p.val)[1]) {
-        fin <- is.finite(p.val[ix,])
-        adj_beta.se <- beta.se[ix, fin]
-        adj_beta.se[which(adj_beta.se == 0)] <- 1e-10
+        fin <- is.finite(p.val[ix, ])
         res <- tryCatch(
           ashr::ash(
             beta[ix, fin],
-            adj_beta.se,
+            pmax(beta.se[ix, fin], 1e-10),
             mixcompdist = "halfuniform",
             alpha = alpha
           )$result,
