@@ -1,8 +1,8 @@
 cdsrmodels
 ================
 
-cdsrmodels contains modeling function created by the cancer data science
-team.
+This package contains modeling and biomarker analysis functions
+created by the [Cancer Data Science](http://cancerdatascience.org/) team.
 
 ## Install
 
@@ -19,11 +19,11 @@ library(cdsrmodels)
 
 ## Modeling functions
 
-### discrete\_test
+### `discrete\_test`
 
-Compares binary features, such as lineage and mutation, running a t-test
-on the difference in mean response between cell lines with the feature
-and without it. Run on response vector `y` and feature matrix `X`
+Compares binary features, such as lineage and mutation, running a two class
+comparison on the difference in mean response between cell lines with the
+feature and without it. Run on response vector `y` and feature matrix `X`
 
 ``` r
 cdsrmodels::discrete_test(X, y)
