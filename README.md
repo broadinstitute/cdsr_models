@@ -19,7 +19,7 @@ library(cdsrmodels)
 
 ## Modeling functions
 
-### `discrete\_test`
+### discrete\_test
 
 Compares binary features, such as lineage and mutation, running a two class
 comparison on the difference in mean response between cell lines with the
