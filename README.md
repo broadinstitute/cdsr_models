@@ -10,6 +10,7 @@ created by the [Cancer Data Science](http://cancerdatascience.org/) team.
 library(devtools)
 devtools::install_github("broadinstitute/cdsr_models")
 ```
+NOTE: If you have issues installing the WGCNA package which cdsr_models depends you can fix them by updating to R >4.0. If you don't want to update to R >4.0 contact William for a workaround.
 
 The package can then be loaded by calling
 
