@@ -52,8 +52,8 @@ lin_associations = function (X,
   if (is.null(MHC_direction)) {
     MHC_direction = ifelse(length(Y) >= length(X), "x", "y")
   }
-  X.NA <- !is.finite(X)
-  Y.NA <- !is.finite(Y)
+  X.NA <- !is.finite(X); X[X.NA] = NA
+  Y.NA <- !is.finite(Y); Y[Y.NA] = NA
   N <- (t(!X.NA) %*% (!Y.NA)) - 2
   if (!is.null(W)) {
     P <- W %*% corpcor::pseudoinverse(t(W) %*% W) %*% t(W)
