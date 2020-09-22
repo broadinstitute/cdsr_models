@@ -29,9 +29,9 @@ require(tidyverse)
 #'                      sebetahat: standard error for the estimate of beta. \cr
 #'                      NegativeProb: posterior probabilities that beta is negative. \cr
 #'                      PositiveProb: posterior probabilities that beta is positive \cr
-#'                      lfsr: local and global fsr values. \cr
+#'                      lfsr: local and global FSR values. \cr
 #'                      svalue: s-values.\cr
-#'                      lfdr: local and global fdr values. \cr
+#'                      lfdr: local and global FDR values. \cr
 #'                      qvalue: q-values for the effect size estimates. \cr
 #'                      PosteriorMean: moderated effect size estimates. \cr
 #'                      PosteriorSD: standard deviations of moderated effect size estimates. \cr
@@ -65,7 +65,7 @@ lin_associations = function (X,
     Y[Y.NA] <- NA
     N = N - dim(W)[2]
   }
-  
+
   f = function(A) {
     if (is.matrix(A)) {
       res = apply(A, 2, function(x)
@@ -77,7 +77,7 @@ lin_associations = function (X,
   }
   sx <- f(X)
   sy <- f(Y)
-  
+
   rho <- WGCNA::cor(X, Y, use = "pairwise.complete.obs")
   beta <- t(t(rho / sx) * sy)
   beta.se <- t(t(sqrt(1 - rho ^ 2) / sx) * sy) / sqrt(N)
@@ -85,7 +85,7 @@ lin_associations = function (X,
   p.val[N < n.min] <- NA
   p.val[(sx == 0) | !is.finite(sx), ] <- NA
   p.val[, (sy == 0) | !is.finite(sy)] <- NA
-  
+
   if (MHC_direction == "y") {
     q.val = apply(p.val, 2, function(x)
       p.adjust(x, method = "BH"))

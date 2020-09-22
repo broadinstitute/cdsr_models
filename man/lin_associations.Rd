@@ -43,9 +43,9 @@ A list with components:
                      sebetahat: standard error for the estimate of beta. \cr
                      NegativeProb: posterior probabilities that beta is negative. \cr
                      PositiveProb: posterior probabilities that beta is positive \cr
-                     lfsr: local and global fsr values. \cr
+                     lfsr: local and global FSR values. \cr
                      svalue: s-values.\cr
-                     lfdr: local and global fdr values. \cr
+                     lfdr: local and global FDR values. \cr
                      qvalue: q-values for the effect size estimates. \cr
                      PosteriorMean: moderated effect size estimates. \cr
                      PosteriorSD: standard deviations of moderated effect size estimates. \cr
