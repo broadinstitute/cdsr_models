@@ -4,8 +4,8 @@ require(ranger)
 
 #' Fits a random forest from a matrix or features X and a vector y.
 #'
-#' @param X n x m numerical matrix of features (missing values are allowed).
-#' @param y Length n vector of numerical values (missing values are allowed).
+#' @param X n x m numerical matrix of features (missing values will be removed by sample).
+#' @param y Length n vector of numerical values (missing values will be removed by column).
 #' @param k Integer number of cross validation cycles to perform.
 #' @param n Number of features to be considered in the model (after correlation filter).
 #'

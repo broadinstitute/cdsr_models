@@ -11,7 +11,7 @@ lin_associations(
   n.min = 4,
   shrinkage = T,
   alpha = 0,
-  X.ind = T
+  MHC_direction = NULL
 )
 }
 \arguments{

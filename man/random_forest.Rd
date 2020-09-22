@@ -7,9 +7,9 @@
 random_forest(X, y, k = 10, n = 500)
 }
 \arguments{
-\item{X}{n x m numerical matrix of features (missing values are allowed).}
+\item{X}{n x m numerical matrix of features (missing values will be removed by sample).}
 
-\item{y}{Length n vector of numerical values (missing values are allowed).}
+\item{y}{Length n vector of numerical values (missing values will be removed by column).}
 
 \item{k}{Integer number of cross validation cycles to perform.}
 
