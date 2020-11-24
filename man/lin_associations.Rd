@@ -27,7 +27,7 @@ lin_associations(
 
 \item{alpha}{Numeric value controling the alpha value for adaptive shrinkage.}
 
-\item{X.ind}{Boolean indicating whether X is the independent variable.}
+\item{MHC_direction}{String ("x" or "y") indicating which variable is independent, defaults to matrix with more columns.}
 }
 \value{
 A list with components:

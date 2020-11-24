@@ -14,7 +14,7 @@ require(tidyverse)
 #' @param n.min Numeric value controlling the minimum degrees of freedom required for p-values.
 #' @param shrinkage Boolean to control whether adaptive shrinkage should be applied.
 #' @param alpha Numeric value controling the alpha value for adaptive shrinkage.
-#' @param X.ind Boolean indicating whether X is the independent variable.
+#' @param MHC_direction String ("x" or "y") indicating which variable is independent, defaults to matrix with more columns.
 #'
 #' @return A list with components:
 #' \describe{
