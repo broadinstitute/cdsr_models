@@ -27,18 +27,22 @@ require(ranger)
 #'
 #' @export
 #'
-random_forest <- function(X, y, k = 10, n = 500){
+random_forest <- function(X,
+                          y,
+                          k = 10,
+                          n = 500){
+
   y.clean <- y[is.finite(y)]  # only finite/non-missing values
   X.clean <- X[, apply(X, 2, function(x) all(is.finite(x)))]
 
   # make sure data aligns
-  cl <- sample(dplyr::intersect(rownames(X.clean), names(y.clean)))  # overlapping rows
+  cl <- sample(dplyr::intersect(rownames(X.clean), names(y.clean)))  # overlapping rows (sample randomizes)
   X.clean <- X.clean[cl,] # selects overlapping lines from X
   y.clean <- y.clean[cl]  # selects overlapping lines from y
 
   colnames(X.clean) %<>% make.names()  # ensure unique column names
 
-  N = floor(length(cl)/k)  # size of each test set (dataset size / num cv cycles)
+  N = floor(length(cl)/k)  # size of each test set (dataset size/cv cycles)
   yhat_rf <- y.clean  # vector to store predicted values of y
 
   SS = tibble()  # empty table to store output
@@ -84,7 +88,7 @@ random_forest <- function(X, y, k = 10, n = 500){
 
   # RF table with average importance values across validation runs
   # mean and sd are of the importance values
-  # stability measures how many models used a featuer (divided by number of CV folds)
+  # stability measures how many models used a feature (divided by number of CV folds)
   RF.table <- tibble::tibble(feature = rownames(RF.importances),
                              RF.imp.mean = RF.importances %>%
                                apply(1, function(x) mean(x, na.rm = T)),
@@ -110,7 +114,7 @@ random_forest <- function(X, y, k = 10, n = 500){
                   R2 = r2,
                   PearsonScore = ps)
 
-  # return importance table, model level table, and predictions
+  # return importance table and predictions
   return(list("model_table" = RF.table,
               "predictions" = yhat_rf))
 }
