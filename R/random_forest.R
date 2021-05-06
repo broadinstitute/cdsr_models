@@ -53,8 +53,8 @@ random_forest <- function(X,
     train <- dplyr::setdiff(cl, test)  # everything else is training
 
     # select training and test data from X, assumes no NAs in X
-    X_train <- X.clean[train,]
-    X_test <- X.clean[test,]
+    X_train <- X.clean[train, , drop=F]
+    X_test <- X.clean[test, , drop=F]
 
     X_train <- X_train[,apply(X_train,2,var) > 0]  # remove columns with variance 0
 
@@ -69,7 +69,7 @@ random_forest <- function(X,
                          importance = "impurity")
 
     # add predictions for test set to prediction vector
-    yhat_rf[test] <- predict(rf, data = as.data.frame(X_test[, colnames(X_train)]))$predictions
+    yhat_rf[test] <- predict(rf, data = as.data.frame(X_test[, colnames(X_train), drop = F]))$predictions
 
     # extract variable importance metrics from RF model
     ss <- tibble::tibble(feature = names(rf$variable.importance),
