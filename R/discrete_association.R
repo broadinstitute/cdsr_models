@@ -16,7 +16,7 @@ require(limma)
 #' }
 #'
 #' @export discrete_test
-discrete_test <- function(X, y) {
+discrete_test <- function(X, y, W = NULL) {
 
   y <- y[is.finite(y)]  # only finite values
   X <- X[, apply(X, 2, function(x) !any(is.na(x)))]
@@ -30,7 +30,7 @@ discrete_test <- function(X, y) {
   y <- y[overlap]
   X <- X[overlap,]
 
-  out_table <- run_lm_stats_limma(X, y, target_type = "feature")
+  out_table <- run_lm_stats_limma(X, y, covars = W, target_type = "feature")
   out_table %<>%
     dplyr::select(feature, EffectSize, t_stat, p.value, q.value, ) %>%
     dplyr::rename(effect_size = EffectSize)
