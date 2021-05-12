@@ -4,12 +4,14 @@
 \alias{discrete_test}
 \title{Performs t-tests on a matrix of binary features and a vector y.}
 \usage{
-discrete_test(X, y)
+discrete_test(X, y, W = NULL)
 }
 \arguments{
 \item{X}{n x m matrix of binary features (missing values are allowed).}
 
 \item{y}{length n vector of numerical values (missing values are allowed).}
+
+\item{W}{n row matrix of confounders passed to run_lm_stats_limma.}
 }
 \value{
 A table with the following columns:

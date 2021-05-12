@@ -5,6 +5,7 @@ require(limma)
 #'
 #' @param X n x m matrix of binary features (missing values are allowed).
 #' @param y length n vector of numerical values (missing values are allowed).
+#' @param W n row matrix of confounders passed to run_lm_stats_limma.
 #'
 #' @return A table with the following columns:
 #' \describe{

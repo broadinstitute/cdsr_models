@@ -6,6 +6,7 @@ require(ranger)
 #'
 #' @param X n x m numerical matrix of features (missing values will be removed by sample).
 #' @param y Length n vector of numerical values (missing values will be removed by column).
+#' @param W n row numerical matrix of confounders to be included in each model (after selection).
 #' @param k Integer number of cross validation cycles to perform.
 #' @param n Number of features to be considered in the model (after correlation filter).
 #'
@@ -29,6 +30,7 @@ require(ranger)
 #'
 random_forest <- function(X,
                           y,
+                          W = NULL,
                           k = 10,
                           n = 500){
 
@@ -60,7 +62,13 @@ random_forest <- function(X,
 
     # select top n correlated features in X (this filters to "relevant" features)
     # allows for faster model fitting
-    X_train <- X_train[,rank(-abs(stats::cor(X_train, y.clean[train]))) <= n]
+    X_train <- X_train[ ,rank(-abs(stats::cor(X_train, y.clean[train]))) <= n]
+
+    # append confounders if applicable
+    if (!is.null(W)) {
+      X_train <- cbind(X_train, W[train, ])
+      X_test <- cbind(X_test, W[test, ])
+    }
 
     # fit a random forest model using the ranger package
     # uses impurity as varaible importance metric

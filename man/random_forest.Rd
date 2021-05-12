@@ -4,12 +4,14 @@
 \alias{random_forest}
 \title{Fits a random forest from a matrix or features X and a vector y.}
 \usage{
-random_forest(X, y, k = 10, n = 500)
+random_forest(X, y, W = NULL, k = 10, n = 500)
 }
 \arguments{
 \item{X}{n x m numerical matrix of features (missing values will be removed by sample).}
 
 \item{y}{Length n vector of numerical values (missing values will be removed by column).}
+
+\item{W}{n row numerical matrix of confounders to be included in each model (after selection).}
 
 \item{k}{Integer number of cross validation cycles to perform.}
 
