@@ -52,6 +52,7 @@ random_forest <- function(X,
   # run cross validation k times
   for (kx in 1:k) {
     test <- cl[((kx - 1) * N + 1):(kx * N)]  # select test set (N points)
+    if (kx == k) test <- cl[((kx - 1) * N + 1):length(cl)]
     train <- dplyr::setdiff(cl, test)  # everything else is training
 
     # select training and test data from X, assumes no NAs in X
