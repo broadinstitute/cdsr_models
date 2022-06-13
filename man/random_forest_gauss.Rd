@@ -14,8 +14,6 @@ random_forest_gauss(X, y, W = NULL, k = 10)
 \item{W}{n row numerical matrix of confounders to be included in each model (after selection).}
 
 \item{k}{Integer number of cross validation cycles to perform.}
-
-\item{n}{Number of features to be considered in the model (after correlation filter).}
 }
 \value{
 A list with components:

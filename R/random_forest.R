@@ -136,7 +136,6 @@ random_forest <- function(X,
 #' @param y Length n vector of numerical values (missing values will be removed by column).
 #' @param W n row numerical matrix of confounders to be included in each model (after selection).
 #' @param k Integer number of cross validation cycles to perform.
-#' @param n Number of features to be considered in the model (after correlation filter).
 #'
 #' @return A list with components:
 #' \describe{
