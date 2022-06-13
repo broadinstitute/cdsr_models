@@ -3,4 +3,5 @@
 export(discrete_test)
 export(lin_associations)
 export(random_forest)
+export(random_forest_gauss)
 export(run_lm_stats_limma)

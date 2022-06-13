@@ -5,7 +5,7 @@ Version: 0.1.0
 Author@R: c(
   person("William", "Colgan", email = "wcolgan@broadinstitute.org", role = "cre"),
   person("Andrew", "Boghossian", email = "aboghoss$broadinstitute.org", role = "aut"))
-Description: cdsrmodels contains modeling function created by the cancer data science team.
+Description: cdsrmodels contains modeling function created by the Cancer Data Science team.
 License: MIT
 Encoding: UTF-8
 LazyData: true
@@ -13,6 +13,7 @@ Imports:
   ashr,
   corpcor,
   data.table,
+  gausscov,
   limma,
   magrittr,
   plyr,
