@@ -4,7 +4,7 @@
 \alias{random_forest_gauss}
 \title{Fits a random forest from a matrix or features X and a vector y using gausscov for feature selection.}
 \usage{
-random_forest_gauss(X, y, W = NULL, k = 10)
+random_forest_gauss(X, y, W = NULL, k = 10, lm = 25, nu = 10, p0 = 0.01)
 }
 \arguments{
 \item{X}{n x m numerical matrix of features (missing values will be removed by sample).}
@@ -14,6 +14,12 @@ random_forest_gauss(X, y, W = NULL, k = 10)
 \item{W}{n row numerical matrix of confounders to be included in each model (after selection).}
 
 \item{k}{Integer number of cross validation cycles to perform.}
+
+\item{lm}{The maximum number of linear approximations for gausscov.}
+
+\item{nu}{The order statistic of Gaussian covariates used for comparison for gausscov.}
+
+\item{p0}{The P-value cut-off for gausscov.}
 }
 \value{
 A list with components:

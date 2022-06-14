@@ -136,6 +136,9 @@ random_forest <- function(X,
 #' @param y Length n vector of numerical values (missing values will be removed by column).
 #' @param W n row numerical matrix of confounders to be included in each model (after selection).
 #' @param k Integer number of cross validation cycles to perform.
+#' @param lm The maximum number of linear approximations for gausscov.
+#' @param nu The order statistic of Gaussian covariates used for comparison for gausscov.
+#' @param p0 The P-value cut-off for gausscov.
 #'
 #' @return A list with components:
 #' \describe{
@@ -155,10 +158,12 @@ random_forest <- function(X,
 #'
 #' @export
 #'
-random_forest_gauss <- function(X,
-                                y,
+random_forest_gauss <- function(X, y,
                                 W = NULL,
-                                k = 10){
+                                k = 10,
+                                lm = 25,
+                                nu = 10,
+                                p0 = 0.01){
 
   y.clean <- y[is.finite(y)]  # only finite/non-missing values
   X.clean <- X[, apply(X, 2, function(x) all(is.finite(x)))]
@@ -188,7 +193,7 @@ random_forest_gauss <- function(X,
     X_train <- X_train[ , apply(X_train, 2, var) > 0.01]  # remove columns with variance less than 0.01
 
     # use gausscov to identify features to use in the model
-    b <- gausscov::f2st(y.clean[train], X_train, lm=25, nu=10)
+    b <- gausscov::f2st(y.clean[train], X_train, lm=lm, nu=nu, p0=p0)
     features <- colnames(X_train)[b[[1]][,2]]
 
     # make sure features were found
