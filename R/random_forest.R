@@ -196,7 +196,7 @@ random_forest_gauss <- function(X, y,
 
     # make sure features were found
     if (length(features > 0)) {
-      X_train <- X_train[ , features]
+      X_train <- X_train[ , features, drop = F]
 
       # append confounders if applicable
       if (!is.null(W)) {
