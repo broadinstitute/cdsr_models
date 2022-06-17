@@ -190,8 +190,6 @@ random_forest_gauss <- function(X, y,
     X_train <- X.clean[train, , drop=F]
     X_test <- X.clean[test, , drop=F]
 
-    X_train <- X_train[ , apply(X_train, 2, var) > 0.01]  # remove columns with variance less than 0.01
-
     # use gausscov to identify features to use in the model
     b <- gausscov::f2st(y.clean[train], X_train, lm=lm, nu=nu, p0=p0)
     features <- colnames(X_train)[b[[1]][,2]]
@@ -208,8 +206,7 @@ random_forest_gauss <- function(X, y,
 
       # fit a random forest model using ranger
       # uses impurity as varaible importance metric
-      rf <- ranger::ranger(y ~ .,
-                           data = as.data.frame(cbind(X_train, y = y.clean[train])),
+      rf <- ranger::ranger(y = y.clean[train], x = X_train,
                            importance = "impurity")
 
       # add predictions for test set to prediction vector
