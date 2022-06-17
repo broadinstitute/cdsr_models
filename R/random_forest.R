@@ -253,7 +253,7 @@ random_forest_gauss <- function(X, y,
     mse <- mean((yhat_rf - y.clean)^2)
     mse.se <- sqrt(var((yhat_rf - y.clean)^2))/sqrt(length(y.clean))
     r2 <- 1 - (mse/var(y.clean))
-    ps <- cor(y.clean, yhat_rf, use = "pairwise.complete.obs")[,1]
+    ps <- cor(y.clean, yhat_rf, use = "pairwise.complete.obs")
     RF.table %<>%
       dplyr::mutate(MSE = mse,
                     MSE.se = mse.se,
