@@ -52,3 +52,11 @@ tuned and are explained in the function documentation.
 ``` r
 cdsrmodels::random_forest(X, y)
 ```
+
+### random\_forest\_gauss
+
+Analogous to `random_forest` but uses [`gausscov`](https://cran.r-project.org/package=gausscov) for feature selection in each fold.
+
+``` r
+cdsrmodels::random_forest_gauss(X, y)
+```
