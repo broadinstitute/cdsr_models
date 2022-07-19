@@ -176,7 +176,8 @@ random_forest_gauss <- function(X, y,
   colnames(X.clean) %<>% make.names()  # ensure unique column names
 
   N = floor(length(cl)/k)  # size of each test set (dataset size/cv cycles)
-  yhat_rf <- y.clean  # vector to store predicted values of y
+  yhat_rf <- rep(NA, length(y.clean)) # vector to store predicted values of y
+  names(yhat_rf) <- names(y.clean) # transfer column names
 
   SS = tibble()  # empty table to store output
 
@@ -189,6 +190,9 @@ random_forest_gauss <- function(X, y,
     # select training and test data from X, assumes no NAs in X
     X_train <- X.clean[train, , drop=F]
     X_test <- X.clean[test, , drop=F]
+    
+    # remove columns with low variance
+    X_train <- X_train[, apply(X_train, 2, var) > 0.01, drop = F]
 
     # use gausscov to identify features to use in the model
     b <- gausscov::f2st(y.clean[train], X_train, lm=lm, nu=nu, p0=p0)
