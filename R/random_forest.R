@@ -10,6 +10,7 @@ require(gausscov)
 #' @param W n row numerical matrix of confounders to be included in each model (after selection).
 #' @param k Integer number of cross validation cycles to perform.
 #' @param n Number of features to be considered in the model (after correlation filter).
+#' @param vc Variance cut off for feature selection.
 #'
 #' @return A list with components:
 #' \describe{
@@ -33,7 +34,8 @@ random_forest <- function(X,
                           y,
                           W = NULL,
                           k = 10,
-                          n = 500){
+                          n = 500,
+                          vc = 0.01){
 
   y.clean <- y[is.finite(y)]  # only finite/non-missing values
   X.clean <- X[, apply(X, 2, function(x) all(is.finite(x)))]
@@ -60,7 +62,7 @@ random_forest <- function(X,
     X_train <- X.clean[train, , drop=F]
     X_test <- X.clean[test, , drop=F]
 
-    X_train <- X_train[,apply(X_train,2,var) > 0]  # remove columns with variance 0
+    X_train <- X_train[,apply(X_train,2,var) > vc]  # remove columns with variance less than vc
 
     # select top n correlated features in X (this filters to "relevant" features)
     # allows for faster model fitting
@@ -73,7 +75,7 @@ random_forest <- function(X,
     }
 
     # fit a random forest model using the ranger package
-    # uses impurity as varaible importance metric
+    # uses impurity as variable importance metric
     rf <- ranger::ranger(y ~ .,
                          data = as.data.frame(cbind(X_train, y = y.clean[train])),
                          importance = "impurity")
@@ -136,6 +138,7 @@ random_forest <- function(X,
 #' @param y Length n vector of numerical values (missing values will be removed by column).
 #' @param W n row numerical matrix of confounders to be included in each model (after selection).
 #' @param k Integer number of cross validation cycles to perform.
+#' @param vc Variance cut off for feature selection.
 #' @param lm The maximum number of linear approximations for gausscov.
 #' @param nu The order statistic of Gaussian covariates used for comparison for gausscov.
 #' @param p0 The P-value cut-off for gausscov.
@@ -161,6 +164,7 @@ random_forest <- function(X,
 random_forest_gauss <- function(X, y,
                                 W = NULL,
                                 k = 10,
+                                vc - 0.01
                                 lm = 25,
                                 nu = 10,
                                 p0 = 0.01){
@@ -191,8 +195,8 @@ random_forest_gauss <- function(X, y,
     X_train <- X.clean[train, , drop=F]
     X_test <- X.clean[test, , drop=F]
     
-    # remove columns with low variance
-    X_train <- X_train[, apply(X_train, 2, var) > 0.01, drop = F]
+    # remove columns with variance lower than vc
+    X_train <- X_train[, apply(X_train, 2, var) > vc, drop = F]
 
     # use gausscov to identify features to use in the model
     b <- gausscov::f2st(y.clean[train], X_train, lm=lm, nu=nu, p0=p0)
