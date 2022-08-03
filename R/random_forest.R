@@ -164,7 +164,7 @@ random_forest <- function(X,
 random_forest_gauss <- function(X, y,
                                 W = NULL,
                                 k = 10,
-                                vc - 0.01
+                                vc = 0.01
                                 lm = 25,
                                 nu = 10,
                                 p0 = 0.01){
